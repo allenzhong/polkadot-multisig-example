@@ -1,4 +1,5 @@
 import { ApiPromise, WsProvider, Keyring } from "@polkadot/api";
+import fs from "fs";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -12,7 +13,9 @@ async function main() {
   console.log(`depositBase   : ${depositBase}`);
   console.log(`depositFactor : ${depositFactor}`);
 
-  const multisig_addres = process.env.MULTISIG_ADDRESS;
+  const multisig_address = fs.readFileSync("multisig_address", "utf8");
+  console.log("multisig_addres", multisig_address);
+
   const account1_phrase = process.env.ACCOUNT1_MNEMONIC;
 
   const account1 = new Keyring({ type: "sr25519" }).addFromUri(account1_phrase);
@@ -34,7 +37,7 @@ async function main() {
   console.log("call method", call.method.toHex());
 
   const info3 = await api.query.multisig.multisigs(
-    multisig_addres,
+    multisig_address,
     call.method.hash
   );
   const TIME_POINT3 = info3.unwrapOr(null).when;
