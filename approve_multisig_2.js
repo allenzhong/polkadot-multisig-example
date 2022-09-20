@@ -1,4 +1,5 @@
 import { ApiPromise, WsProvider, Keyring } from "@polkadot/api";
+import { signAndSendWrapper } from "./wrapper.js";
 import fs from "fs";
 import dotenv from "dotenv";
 dotenv.config();
@@ -30,6 +31,14 @@ async function main() {
 
   const account3 = new Keyring({ type: "sr25519" }).addFromUri(account3_phrase);
 
+  const account4_phrase = process.env.ACCOUNT4_MNEMONIC;
+
+  const account4 = new Keyring({ type: "sr25519" }).addFromUri(account4_phrase);
+
+  const account5_phrase = process.env.ACCOUNT5_MNEMONIC;
+
+  const account5 = new Keyring({ type: "sr25519" }).addFromUri(account5_phrase);
+
   const AMOUNT_TO_SEND = process.env.AMOUNT_TO_SEND;
   const MAX_WEIGHT = process.env.MAX_WEIGHT;
 
@@ -46,16 +55,18 @@ async function main() {
   const otherSignatories2 = [
     account1.address,
     account3.address,
+    account4.address,
   ];
-  const tx2 = await api.tx.multisig
-    .approveAsMulti(
-      3,
-      otherSignatories2,
-      TIME_POINT2,
-      call.method.hash,
-      MAX_WEIGHT
-    )
-    .signAndSend(account2);
+  const nonce = await api.rpc.system.accountNextIndex(account2.address);
+  const tx2 = api.tx.multisig.approveAsMulti(
+    4,
+    otherSignatories2.sort(),
+    TIME_POINT2,
+    call.method.hash.toHex(),
+    MAX_WEIGHT
+  );
+  const result = await signAndSendWrapper(tx2, nonce, account2);
+  console.log("result ------------- \n", result);
   console.log("Account2 tx hash", tx2.toHex());
 }
 

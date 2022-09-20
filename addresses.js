@@ -1,5 +1,4 @@
 import { ApiPromise, WsProvider, Keyring } from "@polkadot/api";
-import { sortAddresses, encodeMultiAddress } from "@polkadot/util-crypto";
 import fs from "fs";
 import dotenv from "dotenv";
 dotenv.config();
@@ -7,10 +6,6 @@ dotenv.config();
 async function main() {
   const wsProvider = new WsProvider("ws://127.0.0.1:9944");
   const api = await ApiPromise.create({ provider: wsProvider });
-  const SS58Prefix = 0;
-  const INDEX = 0;
-  const THRESHOLD = 4;
-
   const account1_phrase = process.env.ACCOUNT1_MNEMONIC;
 
   const account1 = new Keyring({ type: "sr25519" }).addFromUri(account1_phrase);
@@ -38,14 +33,15 @@ async function main() {
     account4.address,
   ];
 
-  const multisig = encodeMultiAddress(signatories, THRESHOLD);
+  console.log(signatories.sort());
 
-  console.log(`\nMultisig Address: ${multisig}`);
-
-  fs.writeFileSync("multisig_address", multisig);
-
-  const saved_multisig = fs.readFileSync("multisig_address", "utf8");
-  console.log(`\nSaved Multisig Address: ${saved_multisig}`);
+  const orders = [
+    account3.address,
+    account4.address,
+    account1.address,
+    account2.address,
+  ];
+  console.log(orders);
 }
 
 main()

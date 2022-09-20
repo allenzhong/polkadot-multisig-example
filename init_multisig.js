@@ -1,4 +1,5 @@
-import { ApiPromise, WsProvider, Keyring } from "@polkadot/api";
+import { ApiPromise, WsProvider, HttpProvider, Keyring } from "@polkadot/api";
+import { signAndSendWrapper } from "./wrapper.js";
 import fs from "fs";
 import dotenv from "dotenv";
 dotenv.config();
@@ -6,6 +7,7 @@ dotenv.config();
 async function main() {
   const to_address = process.env.TO_ADDRESS;
   const wsProvider = new WsProvider("ws://127.0.0.1:9944");
+  // const httpProvider = new HttpProvider("http://127.0.0.1:9933");
   const api = await ApiPromise.create({ provider: wsProvider });
 
   const depositBase = api.consts.multisig.depositBase;
@@ -21,7 +23,6 @@ async function main() {
   const account1 = new Keyring({ type: "sr25519" }).addFromUri(account1_phrase);
 
   const account2_phrase = process.env.ACCOUNT2_MNEMONIC;
-  ("leaf spin notable skill antique range trash until target plunge field basket");
 
   const account2 = new Keyring({ type: "sr25519" }).addFromUri(account2_phrase);
 
@@ -29,10 +30,18 @@ async function main() {
 
   const account3 = new Keyring({ type: "sr25519" }).addFromUri(account3_phrase);
 
+  const account4_phrase = process.env.ACCOUNT4_MNEMONIC;
+
+  const account4 = new Keyring({ type: "sr25519" }).addFromUri(account4_phrase);
+
+  const account5_phrase = process.env.ACCOUNT5_MNEMONIC;
+
+  const account5 = new Keyring({ type: "sr25519" }).addFromUri(account5_phrase);
   const AMOUNT_TO_SEND = process.env.AMOUNT_TO_SEND;
   const MAX_WEIGHT = process.env.MAX_WEIGHT;
 
   const call = api.tx.balances.transfer(to_address, AMOUNT_TO_SEND);
+  // api.tx.utility.batch()
   console.log("call hash", call.hash.toHex());
   console.log("call method", call.method.toHex());
   const info = await api.query.multisig.multisigs(
@@ -44,18 +53,25 @@ async function main() {
 
   const TIME_POINT1 = null;
   console.log(`account1 ${account1.address}`);
-  const otherSignatories1 = [account3.address, account2.address];
+  const otherSignatories1 = [
+    account2.address,
+    account3.address,
+    account4.address,
+  ];
   console.log("otherSignatories1", otherSignatories1);
   const nonce = await api.rpc.system.accountNextIndex(account1.address);
-  const tx1 = await api.tx.multisig
+  const tx1 = api.tx.multisig
     .approveAsMulti(
-      3,
-      otherSignatories1,
+      4,
+      otherSignatories1.sort(),
       TIME_POINT1,
-      call.method.hash,
+      call.method.hash.toHex(),
       MAX_WEIGHT
-    )
-    .signAndSend(account1, { nonce });
+  );
+
+  await signAndSendWrapper(tx1, nonce, account1);
+    // .signAndSend(account1, { nonce });
+  
   console.log("Account1 tx hash", tx1.toHex());
 }
 

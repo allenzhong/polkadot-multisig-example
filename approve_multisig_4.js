@@ -45,23 +45,20 @@ async function main() {
     multisig_address,
     call.method.hash
   );
-  console.log(info3.createdAtHash.toHex());
   const TIME_POINT3 = info3.unwrapOr(null).when;
   const otherSignatories3 = [
     account1.address,
     account2.address,
     account3.address,
-    // account4.address,
   ];
 
   const nonce = await api.rpc.system.accountNextIndex(account4.address);
 
-  const tx4 = await api.tx.multisig.asMulti(
+  const tx4 = await api.tx.multisig.approveAsMulti(
     4,
     otherSignatories3.sort(),
     TIME_POINT3,
-    call.method.toHex(),
-    false,
+    call.method.hash.toHex(),
     MAX_WEIGHT
   );
 

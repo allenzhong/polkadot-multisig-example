@@ -45,16 +45,15 @@ async function main() {
     multisig_address,
     call.method.hash
   );
-  console.log(info3.createdAtHash.toHex());
   const TIME_POINT3 = info3.unwrapOr(null).when;
   const otherSignatories3 = [
-    account1.address,
+    // account1.address,
     account2.address,
     account3.address,
-    // account4.address,
+    account4.address,
   ];
 
-  const nonce = await api.rpc.system.accountNextIndex(account4.address);
+  const nonce = await api.rpc.system.accountNextIndex(account1.address);
 
   const tx4 = await api.tx.multisig.asMulti(
     4,
@@ -65,7 +64,7 @@ async function main() {
     MAX_WEIGHT
   );
 
-  const result = await signAndSendWrapper(tx4, nonce, account4);
+  const result = await signAndSendWrapper(tx4, nonce, account1);
   console.log("result ------------- \n", result);
 }
 
